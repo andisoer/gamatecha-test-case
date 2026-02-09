@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test_case/controllers/home_controller.dart';
+import 'package:flutter_test_case/utils/app_routes.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/state_manager.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -52,6 +54,9 @@ class HomePage extends GetView<HomeController> {
                     final user = users[index];
 
                     return ListTile(
+                      onTap: () {
+                        Get.toNamed(AppRoutes.detail, arguments: user);
+                      },
                       title: Text(user.firstName ?? ''),
                       subtitle: Text(user.lastName ?? ''),
                       leading: CircleAvatar(

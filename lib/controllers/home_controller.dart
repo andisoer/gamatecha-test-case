@@ -13,12 +13,12 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    await fetchUser();
+    await fetchUser(refresh: true);
   }
 
   int? page = 1;
   int limit = 10;
-  int totalPage = 0;
+  int totalPage = 1;
 
   final isLoading = RxBool(false);
   final usersState = RxList<UserModel>();
