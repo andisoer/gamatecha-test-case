@@ -23,6 +23,11 @@ class HomeController extends GetxController {
   final message = RxString('');
 
   Future<void> fetchUser({bool refresh = false}) async {
+    if (refresh) {
+      isLoading.value = true;
+      usersState.value = [];
+    }
+
     page = refresh ? 1 : page;
 
     if (page == null) return;
@@ -41,15 +46,12 @@ class HomeController extends GetxController {
       page = (data.length == page) ? null : (page ?? 1) + 1;
 
       if (result.isEmpty) {
-        if (refresh) {
-          isLoading.value = false;
-          usersState.value = [];
-          return;
-        }
         usersState.value = result;
       } else {
         usersState.assignAll([...usersState, ...result]);
       }
+
+      refresh = false;
     } catch (e) {
       message.value = 'Failed to fetch users';
     }

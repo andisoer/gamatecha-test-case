@@ -24,7 +24,9 @@ class HomePage extends GetView<HomeController> {
                 return false;
               },
               child: RefreshIndicator.adaptive(
-                onRefresh: () async {},
+                onRefresh: () async {
+                  await controller.fetchUser(refresh: true);
+                },
                 child: ListView.builder(
                   key: const ValueKey('list_user'),
                   itemCount: users.length,
