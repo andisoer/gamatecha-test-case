@@ -14,13 +14,27 @@ class HomePage extends GetView<HomeController> {
       body: SafeArea(
         child: Obx(() {
           if (controller.message.value.isNotEmpty) {
-            return Center(child: Text(controller.message.value));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(controller.message.value),
+                  ElevatedButton(
+                    onPressed: () => controller.fetchUser(refresh: true),
+                    child: Text("Retry"),
+                  ),
+                ],
+              ),
+            );
           } else {
             final users = controller.usersState;
             return NotificationListener(
               onNotification: (notification) {
                 if (notification is ScrollEndNotification &&
-                    notification.metrics.extentAfter == 0) {}
+                    notification.metrics.extentAfter == 0) {
+                  controller.fetchUser();
+                  return true;
+                }
                 return false;
               },
               child: RefreshIndicator.adaptive(
@@ -36,6 +50,7 @@ class HomePage extends GetView<HomeController> {
                     }
 
                     final user = users[index];
+
                     return ListTile(
                       title: Text(user.firstName ?? ''),
                       subtitle: Text(user.lastName ?? ''),
