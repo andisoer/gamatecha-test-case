@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test_case/controllers/home_controller.dart';
+import 'package:flutter_test_case/utils/app_routes.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/state_manager.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -14,17 +16,33 @@ class HomePage extends GetView<HomeController> {
       body: SafeArea(
         child: Obx(() {
           if (controller.message.value.isNotEmpty) {
-            return Center(child: Text(controller.message.value));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(controller.message.value),
+                  ElevatedButton(
+                    onPressed: () => controller.fetchUser(refresh: true),
+                    child: Text("Retry"),
+                  ),
+                ],
+              ),
+            );
           } else {
             final users = controller.usersState;
             return NotificationListener(
               onNotification: (notification) {
                 if (notification is ScrollEndNotification &&
-                    notification.metrics.extentAfter == 0) {}
+                    notification.metrics.extentAfter == 0) {
+                  controller.fetchUser();
+                  return true;
+                }
                 return false;
               },
               child: RefreshIndicator.adaptive(
-                onRefresh: () async {},
+                onRefresh: () async {
+                  await controller.fetchUser(refresh: true);
+                },
                 child: ListView.builder(
                   key: const ValueKey('list_user'),
                   itemCount: users.length,
@@ -34,7 +52,11 @@ class HomePage extends GetView<HomeController> {
                     }
 
                     final user = users[index];
+
                     return ListTile(
+                      onTap: () {
+                        Get.toNamed(AppRoutes.detail, arguments: user);
+                      },
                       title: Text(user.firstName ?? ''),
                       subtitle: Text(user.lastName ?? ''),
                       leading: CircleAvatar(

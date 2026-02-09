@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test_case/models/user_model.dart';
 import 'package:flutter_test_case/utils/asset_loader.dart';
 import 'package:get/get.dart';
@@ -12,22 +13,32 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    await fetchUser();
+    await fetchUser(refresh: true);
   }
 
   int? page = 1;
   int limit = 10;
+  int totalPage = 1;
 
   final isLoading = RxBool(false);
   final usersState = RxList<UserModel>();
   final message = RxString('');
 
   Future<void> fetchUser({bool refresh = false}) async {
+    if (refresh) {
+      isLoading.value = true;
+      usersState.value = [];
+      page = 1;
+      message.value = '';
+    }
+
     page = refresh ? 1 : page;
 
     if (page == null) return;
 
     if (page == 1) {}
+
+    if (page! > totalPage) return;
 
     try {
       final responseStr = await _assetLoader.loadString(
@@ -35,22 +46,27 @@ class HomeController extends GetxController {
       );
       final responseJson = jsonDecode(responseStr) as Map<String, dynamic>;
 
+      totalPage = responseJson["meta"]["totalPage"] as int;
       final data = responseJson['data'] as List<dynamic>;
       final result = data.map((user) => UserModel.fromJson(user)).toList();
 
       page = (data.length == page) ? null : (page ?? 1) + 1;
 
       if (result.isEmpty) {
-        if (refresh) {
-          isLoading.value = false;
-          usersState.value = [];
+        if (page == 1) {
+          message.value = 'No users found';
+          usersState.value = result;
+
           return;
         }
-        usersState.value = result;
       } else {
         usersState.assignAll([...usersState, ...result]);
       }
-    } catch (e) {
+
+      refresh = false;
+    } catch (e, s) {
+      debugPrint("$e");
+      debugPrint("$s");
       message.value = 'Failed to fetch users';
     }
   }
